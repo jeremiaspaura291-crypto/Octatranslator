@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Octadecimal Translator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        :root {
+            /* Paleta Material You (M3) - Tonos Semilla Indigo/Violeta */
+            --md-sys-color-primary: #4f46e5;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-primary-container: #e0e0ff;
+            --md-sys-color-on-primary-container: #00006e;
+            --md-sys-color-surface: #fdfbff;
+            --md-sys-color-on-surface: #1b1b1f;
+            --md-sys-color-surface-variant: #e1e2ec;
+            --md-sys-color-on-surface-variant: #44464f;
+            --md-sys-color-outline: #757780;
+            --md-sys-color-error: #ba1a1a;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            overflow-x: hidden;
+        }
+
+        h1 { font-family: 'Google Sans', sans-serif; }
+
+        .m3-card {
+            background-color: #f3f3fa; /* Surface Container Low */
+            border-radius: 28px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .m3-input-container {
+            background-color: var(--md-sys-color-surface-variant);
+            border-radius: 24px;
+            padding: 1.5rem;
+            border: 2px solid transparent;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .m3-input-container:focus-within {
+            background-color: #ffffff;
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        textarea {
+            background: transparent;
+            border: none;
+            outline: none;
+            width: 100%;
+            height: 180px;
+            resize: none;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .m3-btn-filled {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border-radius: 20px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .m3-btn-filled:hover {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
+        }
+
+        .m3-btn-tonal {
+            background-color: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            border-radius: 20px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .m3-btn-tonal:hover {
+            filter: brightness(0.95);
+        }
+
+        .error-msg {
+            color: var(--md-sys-color-error);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+            font-weight: 500;
+            padding-left: 0.5rem;
+        }
+
+        /* Animación Ripple simulada con GSAP */
+        .ripple-container {
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 md:p-6">
+    <div id="app-container" class="max-w-5xl w-full opacity-0 translate-y-8">
+        <header class="text-center mb-10">
+            <h1 id="main-title" class="text-4xl md:text-5xl font-medium text-slate-900 mb-3 tracking-tight">Octadecimal Translator</h1>
+            <p id="main-subtitle" class="text-slate-500 font-normal">Inspirado en Material You & GSAP</p>
+        </header>
+
+        <div class="m3-card p-6 md:p-10 shadow-sm border border-white/50">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Entrada -->
+                <div id="input-section" class="flex flex-col">
+                    <div class="m3-input-container">
+                        <label class="text-xs font-medium uppercase tracking-widest text-indigo-600 mb-2 block">Texto Humano</label>
+                        <textarea id="inputText" placeholder="Escribe aquí..."></textarea>
+                    </div>
+                    <div id="errorInput" class="error-msg">⚠️ Caracteres no permitidos</div>
+                    <div class="mt-4">
+                        <button onclick="translateToOctadecimal()" class="m3-btn-filled w-full py-4 ripple-container">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                            Traducir a Octadecimal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Salida -->
+                <div id="output-section" class="flex flex-col">
+                    <div class="m3-input-container">
+                        <label class="text-xs font-medium uppercase tracking-widest text-indigo-600 mb-2 block">Código Octadecimal</label>
+                        <textarea id="outputOcta" class="font-mono" placeholder="1-2-3 / 4-5 ."></textarea>
+                    </div>
+                    <div id="errorOcta" class="error-msg">⚠️ Formato de código incorrecto</div>
+                    <div class="mt-4">
+                        <button onclick="translateToText()" class="m3-btn-filled w-full py-4 ripple-container">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7M19 19l-7-7 7-7"></path></svg>
+                            Traducir a Texto
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acciones Secundarias -->
+            <div id="action-bar" class="mt-10 flex flex-wrap justify-center gap-3 border-t border-slate-200 pt-8">
+                <button onclick="copyToClipboard('inputText')" class="m3-btn-tonal flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                    Copiar Texto
+                </button>
+                <button onclick="copyToClipboard('outputOcta')" class="m3-btn-tonal flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                    Copiar Código
+                </button>
+                <button onclick="clearFields()" class="m3-btn-tonal text-red-700 bg-red-50 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- Ayuda Material -->
+        <footer id="footer-info" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-indigo-50 p-6 rounded-[24px] border border-indigo-100">
+                <h4 class="text-xs font-bold text-indigo-900 uppercase mb-2">Separadores</h4>
+                <p class="text-indigo-700 text-xs">Letras: <b>-</b> | Palabras: <b>/</b> | Fin: <b>.</b></p>
+            </div>
+            <div class="bg-violet-50 p-6 rounded-[24px] border border-violet-100">
+                <h4 class="text-xs font-bold text-violet-900 uppercase mb-2">Acentos</h4>
+                <p class="text-violet-700 text-xs">,27:Á | ,23:É | ,19:Í | ,12:Ó | ,6:Ú</p>
+            </div>
+            <div class="bg-slate-50 p-6 rounded-[24px] border border-slate-200">
+                <h4 class="text-xs font-bold text-slate-900 uppercase mb-2">Inversión</h4>
+                <p class="text-slate-700 text-[10px] font-mono">1:Z ... 13:Ñ ... 27:A</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const alphabet = ['Z', 'Y', 'X', 'W', 'V', 'U', 'T', 'S', 'R', 'Q', 'P', 'O', 'Ñ', 'N', 'M', 'L', 'K', 'J', 'I', 'H', 'G', 'F', 'E', 'D', 'C', 'B', 'A'];
+        const accents = { 'Á': ',27', 'É': ',23', 'Í': ',19', 'Ó': ',12', 'Ú': ',6' };
+        const reverseAccents = { ',27': 'Á', ',23': 'É', ',19': 'Í', ',12': 'Ó', ',6': 'Ú' };
+
+        // Animación Inicial GSAP (Material Motion)
+        window.onload = () => {
+            const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+            tl.to("#app-container", { opacity: 1, y: 0, duration: 1.2 })
+              .from("#main-title", { y: 20, opacity: 0, duration: 0.8 }, "-=0.8")
+              .from("#main-subtitle", { y: 10, opacity: 0, duration: 0.8 }, "-=0.6")
+              .from(".m3-card", { scale: 0.95, opacity: 0, duration: 1 }, "-=0.6")
+              .from(["#input-section", "#output-section"], { y: 30, opacity: 0, stagger: 0.2, duration: 0.8 }, "-=0.8")
+              .from("#footer-info > div", { scale: 0.8, opacity: 0, stagger: 0.1, duration: 0.6 }, "-=0.4");
+        };
+
+        function animateResponse(targetId) {
+            const container = document.getElementById(targetId).parentElement;
+            gsap.fromTo(container, 
+                { backgroundColor: "#e0e0ff" }, 
+                { backgroundColor: "#e1e2ec", duration: 0.6 }
+            );
+            gsap.from(document.getElementById(targetId), {
+                y: 10, opacity: 0, duration: 0.4, ease: "back.out"
+            });
+        }
+
+        function showError(id) {
+            const el = document.getElementById(id);
+            el.style.display = 'block';
+            gsap.fromTo(el, { x: -4 }, { x: 4, duration: 0.08, repeat: 3, yoyo: true });
+        }
+
+        function translateToOctadecimal() {
+            const input = document.getElementById('inputText').value.toUpperCase();
+            document.getElementById('errorInput').style.display = 'none';
+
+            if (!input.trim()) {
+                document.getElementById('outputOcta').value = '';
+                return;
+            }
+
+            const sentences = input.split('.');
+            const translatedSentences = sentences.map(sentence => {
+                if (!sentence.trim()) return '';
+                const words = sentence.trim().split(/\s+/);
+                const translatedWords = words.map(word => {
+                    let result = [];
+                    for (let i = 0; i < word.length; i++) {
+                        const char = word[i];
+                        if (accents[char]) result.push(accents[char]);
+                        else {
+                            const index = alphabet.indexOf(char);
+                            if (index !== -1) result.push((index + 1).toString());
+                            else {
+                                result.push(char);
+                                if (!/[\s\-\/\.]/.test(char)) showError('errorInput');
+                            }
+                        }
+                    }
+                    return result.join('-');
+                });
+                return translatedWords.join(' / ');
+            });
+
+            let finalOutput = translatedSentences.filter(s => s !== '').join(' . ');
+            if (input.endsWith('.')) finalOutput += ' .';
+            
+            document.getElementById('outputOcta').value = finalOutput.trim();
+            animateResponse('outputOcta');
+        }
+
+        function translateToText() {
+            const input = document.getElementById('outputOcta').value.trim();
+            document.getElementById('errorOcta').style.display = 'none';
+
+            if (!input) {
+                document.getElementById('inputText').value = '';
+                return;
+            }
+            
+            const sentences = input.split('.');
+            const translatedSentences = sentences.map(sentence => {
+                if (!sentence.trim()) return '';
+                const words = sentence.trim().split('/');
+                const translatedWords = words.map(word => {
+                    const codes = word.trim().split('-');
+                    let wordText = '';
+                    for (let i = 0; i < codes.length; i++) {
+                        const code = codes[i].trim();
+                        if (!code) continue;
+                        if (code.startsWith(',')) {
+                            if (reverseAccents[code]) wordText += reverseAccents[code];
+                            else { wordText += code; showError('errorOcta'); }
+                        } else {
+                            const num = parseInt(code);
+                            if (!isNaN(num) && num >= 1 && num <= 27) wordText += alphabet[num - 1];
+                            else { wordText += code; if (code !== '') showError('errorOcta'); }
+                        }
+                    }
+                    return wordText;
+                });
+                return translatedWords.join(' ');
+            });
+
+            let finalOutput = translatedSentences.filter(s => s !== '').join('. ');
+            if (input.endsWith('.')) finalOutput += '.';
+            
+            document.getElementById('inputText').value = finalOutput.trim();
+            animateResponse('inputText');
+        }
+
+        function clearFields() {
+            const tl = gsap.timeline();
+            tl.to(["#inputText", "#outputOcta"], { opacity: 0, y: 5, duration: 0.2 })
+              .call(() => {
+                  document.getElementById('inputText').value = '';
+                  document.getElementById('outputOcta').value = '';
+                  document.getElementById('errorInput').style.display = 'none';
+                  document.getElementById('errorOcta').style.display = 'none';
+              })
+              .to(["#inputText", "#outputOcta"], { opacity: 1, y: 0, duration: 0.3 });
+        }
+
+        function copyToClipboard(id) {
+            const textarea = document.getElementById(id);
+            textarea.select();
+            document.execCommand('copy');
+            
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            
+            gsap.to(btn, { scale: 0.95, duration: 0.1, yoyo: true, repeat: 1 });
+            btn.innerHTML = '✨ ¡Copiado!';
+            setTimeout(() => { btn.innerHTML = originalHTML; }, 2000);
+        }
+    </script>
+</body>
+</html>
